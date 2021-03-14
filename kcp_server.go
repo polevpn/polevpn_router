@@ -1,6 +1,9 @@
 package main
 
 import (
+	"sync"
+
+	"github.com/polevpn/elog"
 	"github.com/polevpn/kcp-go/v5"
 )
 
@@ -24,13 +27,14 @@ func NewKCPServer(requestHandler *RequestHandler) *KCPServer {
 	}
 }
 
-func (ks *KCPServer) Listen(addr string, sharedKey string) error {
+func (ks *KCPServer) Listen(wg *sync.WaitGroup, addr string, sharedKey string) {
+	defer wg.Done()
 	block, _ := kcp.NewAESBlockCrypt(KCP_KEY)
 	if listener, err := kcp.ListenWithOptions(addr, block, 10, 3); err == nil {
 		for {
 			conn, err := listener.AcceptKCP()
 			if err != nil {
-				return err
+				elog.Error(err)
 			}
 			conn.SetMtu(KCP_MTU)
 			conn.SetACKNoDelay(true)
@@ -42,7 +46,7 @@ func (ks *KCPServer) Listen(addr string, sharedKey string) error {
 			go ks.handleConn(conn)
 		}
 	} else {
-		return err
+		elog.Error(err)
 	}
 
 }

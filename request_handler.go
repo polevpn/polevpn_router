@@ -82,7 +82,7 @@ func (r *RequestHandler) handleC2SIPData(pkt PolePacket, conn Conn) {
 
 	ipv4pkg := header.IPv4(pkt.Payload())
 
-	//elog.Info("received pkt to ", ipv4pkg.DestinationAddress().To4().String())
+	elog.Debug("received pkt to ", ipv4pkg.DestinationAddress().To4().String())
 
 	toconn := r.connmgr.GetConnByGateway(ipv4pkg.DestinationAddress().To4().String())
 
