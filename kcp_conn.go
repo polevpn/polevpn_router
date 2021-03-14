@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/polevpn/elog"
-	"github.com/xtaci/kcp-go/v5"
+	"github.com/polevpn/kcp-go/v5"
 )
 
 const (

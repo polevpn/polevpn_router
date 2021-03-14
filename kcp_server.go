@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/polevpn/elog"
-	"github.com/xtaci/kcp-go/v5"
+	"github.com/polevpn/kcp-go/v5"
 )
 
 const (
@@ -17,7 +16,6 @@ var KCP_KEY = []byte{0x17, 0xef, 0xad, 0x3b, 0x12, 0xed, 0xfa, 0xc9, 0xd7, 0x54,
 
 type KCPServer struct {
 	requestHandler *RequestHandler
-	connMgr        *ConnMgr
 }
 
 func NewKCPServer(requestHandler *RequestHandler) *KCPServer {
@@ -50,8 +48,6 @@ func (ks *KCPServer) Listen(addr string, sharedKey string) error {
 }
 
 func (ks *KCPServer) handleConn(conn *kcp.UDPSession) {
-
-	elog.Info("accpet new kcp conn", conn.RemoteAddr().String())
 
 	kcpconn := NewKCPConn(conn, ks.requestHandler)
 	if ks.requestHandler != nil {

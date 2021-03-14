@@ -61,6 +61,7 @@ func main() {
 		elog.Fatal("load config fail", err)
 	}
 	err = NewPoleVPNRouter().Start(Config)
+
 	if err != nil {
 		elog.Fatal("start polevpn router fail", err)
 	}

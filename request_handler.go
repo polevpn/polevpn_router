@@ -1,23 +1,22 @@
 package main
 
 import (
+	"net"
+
 	"github.com/polevpn/anyvalue"
 	"github.com/polevpn/elog"
 	"github.com/polevpn/netstack/tcpip/header"
-	"github.com/polevpn/netstack/tcpip/transport/icmp"
 )
 
 type RequestHandler struct {
 	connmgr *ConnMgr
 }
 
-func NewRequestHandler() *RequestHandler {
+func NewRequestHandler(connmgr *ConnMgr) *RequestHandler {
 
-	return &RequestHandler{}
-}
-
-func (r *RequestHandler) SetConnMgr(connmgr *ConnMgr) {
-	r.connmgr = connmgr
+	return &RequestHandler{
+		connmgr: connmgr,
+	}
 }
 
 func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
@@ -25,12 +24,10 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 	ppkt := PolePacket(pkt)
 	switch ppkt.Cmd() {
 	case CMD_ROUTER_REGISTER:
-		elog.Info("received router register request from", conn.String())
 		r.handleRouterRegister(ppkt, conn)
 	case CMD_C2S_IPDATA:
 		r.handleC2SIPData(ppkt, conn)
 	case CMD_HEART_BEAT:
-		//elog.Info("received heart beat request", conn.String())
 		r.handleHeartBeat(ppkt, conn)
 	case CMD_CLIENT_CLOSED:
 		r.handleClientClose(ppkt, conn)
@@ -40,20 +37,38 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 }
 
 func (r *RequestHandler) OnConnection(conn Conn) {
-
+	elog.Info("accpet new kcp conn", conn.String())
+	r.connmgr.SetConnById(conn.String(), conn)
 }
 
 func (r *RequestHandler) handleRouterRegister(pkt PolePacket, conn Conn) {
 
-	av, err := anyvalue.NewFromJson(pkt.Payload())
+	elog.Info("received router register request from", conn.String())
+
+	req, err := anyvalue.NewFromJson(pkt.Payload())
+
+	resp := anyvalue.New()
 
 	if err != nil {
-		av.Set("error", err.Error())
+		resp.Set("error", err.Error())
 	} else {
-		r.connmgr.AttachRouteToConn(av.Get("network").AsStr(), conn)
+
+		oldConn := r.connmgr.GetConnByGateway(req.Get("gateway").AsStr())
+		if oldConn != nil {
+			oldConn.Close(true)
+		}
+
+		elog.Info("register route ", req.Get("network").AsStr())
+		r.connmgr.AttachRouteToConn(req.Get("network").AsStr(), conn)
+
+		elog.Info("register gateway ", req.Get("gateway").AsStr())
+		r.connmgr.AttachGatewayToConn(req.Get("gateway").AsStr(), conn)
+
+		r.connmgr.UpdateConnActiveTime(conn)
+
 	}
 
-	body, _ := av.MarshalJSON()
+	body, _ := resp.MarshalJSON()
 	buf := make([]byte, POLE_PACKET_HEADER_LEN+len(body))
 	copy(buf[POLE_PACKET_HEADER_LEN:], body)
 	resppkt := PolePacket(buf)
@@ -65,21 +80,27 @@ func (r *RequestHandler) handleRouterRegister(pkt PolePacket, conn Conn) {
 
 func (r *RequestHandler) handleC2SIPData(pkt PolePacket, conn Conn) {
 
-	ipv4pkg := header.IPv4(pkt)
+	ipv4pkg := header.IPv4(pkt.Payload())
 
-	if ipv4pkg.Protocol() == uint8(icmp.ProtocolNumber4) {
+	//elog.Info("received pkt to ", ipv4pkg.DestinationAddress().To4().String())
 
-		conn := r.connmgr.FindRoute(ipv4pkg.DestinationAddress())
+	toconn := r.connmgr.GetConnByGateway(ipv4pkg.DestinationAddress().To4().String())
 
-		if conn == nil {
-			elog.Error("can't find route for ", ipv4pkg.DestinationAddress())
-			return
-		}
-		conn.Send(pkt)
+	if toconn == nil {
+		toconn = r.connmgr.FindRoute(net.IP(ipv4pkg.DestinationAddress().To4()))
 	}
+
+	if toconn == nil {
+		elog.Error("can't find route for ", ipv4pkg.DestinationAddress())
+		return
+	}
+	pkt.SetCmd(CMD_S2C_IPDATA)
+	toconn.Send(pkt)
+
 }
 
 func (r *RequestHandler) handleHeartBeat(pkt PolePacket, conn Conn) {
+	elog.Debug("received heartbeat request", conn.String())
 	buf := make([]byte, POLE_PACKET_HEADER_LEN)
 	resppkt := PolePacket(buf)
 	resppkt.SetLen(POLE_PACKET_HEADER_LEN)
@@ -98,6 +119,7 @@ func (r *RequestHandler) OnClosed(conn Conn, proactive bool) {
 	elog.Info("connection closed event from", conn.String())
 
 	r.connmgr.DetachRouteFromConn(conn)
+	r.connmgr.DetachGatewayFromConn(conn)
 	//just process proactive close event
 	if proactive {
 		elog.Info(conn.String(), "proactive close")
