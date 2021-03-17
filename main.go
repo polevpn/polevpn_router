@@ -4,9 +4,7 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
-	"time"
 
 	"github.com/polevpn/anyvalue"
 	"github.com/polevpn/elog"
@@ -32,8 +30,6 @@ func signalHandler() {
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 				elog.Fatal("receive exit signal,exit")
-			case syscall.SIGUSR1:
-			case syscall.SIGUSR2:
 			default:
 			}
 		}
@@ -45,14 +41,6 @@ func main() {
 	flag.Parse()
 	defer elog.Flush()
 	signalHandler()
-
-	go func() {
-		for range time.NewTicker(time.Minute).C {
-			m := runtime.MemStats{}
-			runtime.ReadMemStats(&m)
-			elog.Printf("memory=%v,goroutines=%v", m.HeapAlloc, runtime.NumGoroutine())
-		}
-	}()
 
 	var err error
 
