@@ -8,14 +8,13 @@ import (
 )
 
 const (
-	KCP_MTU          = 1350
-	KCP_RECV_WINDOW  = 512
-	KCP_SEND_WINDOW  = 512
-	KCP_READ_BUFFER  = 4194304
-	KCP_WRITE_BUFFER = 4194304
+	KCP_SHARED_KEY_LEN = 16
+	KCP_MTU            = 1350
+	KCP_RECV_WINDOW    = 512
+	KCP_SEND_WINDOW    = 512
+	KCP_READ_BUFFER    = 4194304
+	KCP_WRITE_BUFFER   = 4194304
 )
-
-var KCP_KEY = []byte{0x17, 0xef, 0xad, 0x3b, 0x12, 0xed, 0xfa, 0xc9, 0xd7, 0x54, 0x14, 0x5b, 0x3a, 0x4f, 0xb5, 0xf6}
 
 type KCPServer struct {
 	requestHandler *RequestHandler
@@ -29,7 +28,11 @@ func NewKCPServer(requestHandler *RequestHandler) *KCPServer {
 
 func (ks *KCPServer) Listen(wg *sync.WaitGroup, addr string, sharedKey string) {
 	defer wg.Done()
-	block, _ := kcp.NewAESBlockCrypt(KCP_KEY)
+	if len(sharedKey) != KCP_SHARED_KEY_LEN {
+		elog.Error("share key must be 16")
+		return
+	}
+	block, _ := kcp.NewAESBlockCrypt([]byte(sharedKey))
 	if listener, err := kcp.ListenWithOptions(addr, block, 10, 3); err == nil {
 		for {
 			conn, err := listener.AcceptKCP()

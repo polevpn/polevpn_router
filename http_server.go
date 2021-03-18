@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	TCP_WRITE_BUFFER_SIZE = 524288
-	TCP_READ_BUFFER_SIZE  = 524288
+	TCP_WRITE_BUFFER_SIZE = 5242880
+	TCP_READ_BUFFER_SIZE  = 5242880
 )
 
 type HttpServer struct {
