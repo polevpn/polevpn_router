@@ -96,7 +96,7 @@ func (r *RequestHandler) handleC2SIPData(pkt PolePacket, conn Conn) {
 	}
 
 	if toconn == nil {
-		elog.Infof("can't find route from %v to %v", srcIp, dstIp)
+		elog.Debugf("can't find route from %v to %v", srcIp, dstIp)
 		return
 	}
 	pkt.SetCmd(CMD_S2C_IPDATA)
