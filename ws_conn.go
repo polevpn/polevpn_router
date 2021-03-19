@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/polevpn/elog"
@@ -17,6 +18,7 @@ type WebSocketConn struct {
 	wch     chan []byte
 	closed  bool
 	handler *RequestHandler
+	wg      *sync.WaitGroup
 }
 
 func NewWebSocketConn(conn *websocket.Conn, handler *RequestHandler) *WebSocketConn {
@@ -25,6 +27,7 @@ func NewWebSocketConn(conn *websocket.Conn, handler *RequestHandler) *WebSocketC
 		closed:  false,
 		wch:     make(chan []byte, CH_WEBSOCKET_WRITE_SIZE),
 		handler: handler,
+		wg:      &sync.WaitGroup{},
 	}
 }
 
@@ -39,6 +42,7 @@ func (wsc *WebSocketConn) Close(flag bool) error {
 		if flag {
 			go wsc.handler.OnClosed(wsc, false)
 		}
+		wsc.wg.Wait()
 		return err
 	}
 	return nil
@@ -52,8 +56,16 @@ func (wsc *WebSocketConn) IsClosed() bool {
 	return wsc.closed
 }
 
-func (wsc *WebSocketConn) Read() {
+func (wsc *WebSocketConn) StartProcess() {
+	wsc.wg.Add(2)
+	go wsc.read()
+	go wsc.write()
+
+}
+
+func (wsc *WebSocketConn) read() {
 	defer func() {
+		wsc.wg.Done()
 		wsc.Close(true)
 	}()
 
@@ -76,7 +88,13 @@ func (wsc *WebSocketConn) Read() {
 
 }
 
-func (wsc *WebSocketConn) Write() {
+func (wsc *WebSocketConn) write() {
+
+	defer func() {
+		wsc.wg.Done()
+		wsc.Close(true)
+	}()
+
 	defer PanicHandler()
 
 	for {
@@ -104,7 +122,7 @@ func (wsc *WebSocketConn) Write() {
 }
 
 func (wsc *WebSocketConn) Send(pkt []byte) {
-	if wsc.closed == true {
+	if wsc.closed {
 		return
 	}
 	if wsc.wch != nil {

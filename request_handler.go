@@ -82,16 +82,21 @@ func (r *RequestHandler) handleC2SIPData(pkt PolePacket, conn Conn) {
 
 	ipv4pkg := header.IPv4(pkt.Payload())
 
-	elog.Debug("received pkt to ", ipv4pkg.DestinationAddress().To4().String())
+	dstIp := ipv4pkg.DestinationAddress().To4()
+	dstIpStr := dstIp.String()
 
-	toconn := r.connmgr.GetConnByGateway(ipv4pkg.DestinationAddress().To4().String())
+	srcIp := ipv4pkg.SourceAddress().To4()
+
+	elog.Debug("received pkt to ", dstIpStr)
+
+	toconn := r.connmgr.GetConnByGateway(dstIpStr)
 
 	if toconn == nil {
-		toconn = r.connmgr.FindRoute(net.IP(ipv4pkg.DestinationAddress().To4()))
+		toconn = r.connmgr.FindRoute(net.IP(dstIp))
 	}
 
 	if toconn == nil {
-		elog.Error("can't find route for ", ipv4pkg.DestinationAddress())
+		elog.Infof("can't find route from %v to %v", srcIp, dstIp)
 		return
 	}
 	pkt.SetCmd(CMD_S2C_IPDATA)

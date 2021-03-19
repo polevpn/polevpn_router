@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"io"
+	"sync"
 
 	"github.com/polevpn/elog"
 	"github.com/polevpn/kcp-go/v5"
@@ -17,6 +18,7 @@ type KCPConn struct {
 	wch     chan []byte
 	closed  bool
 	handler *RequestHandler
+	wg      *sync.WaitGroup
 }
 
 func NewKCPConn(conn *kcp.UDPSession, handler *RequestHandler) *KCPConn {
@@ -25,6 +27,7 @@ func NewKCPConn(conn *kcp.UDPSession, handler *RequestHandler) *KCPConn {
 		closed:  false,
 		wch:     make(chan []byte, CH_KCP_WRITE_SIZE),
 		handler: handler,
+		wg:      &sync.WaitGroup{},
 	}
 }
 
@@ -39,6 +42,7 @@ func (kc *KCPConn) Close(flag bool) error {
 		if flag {
 			go kc.handler.OnClosed(kc, false)
 		}
+		kc.wg.Wait()
 		return err
 	}
 	return nil
@@ -52,8 +56,16 @@ func (kc *KCPConn) IsClosed() bool {
 	return kc.closed
 }
 
-func (kc *KCPConn) Read() {
+func (kc *KCPConn) StartProcess() {
+	kc.wg.Add(2)
+	go kc.read()
+	go kc.write()
+
+}
+
+func (kc *KCPConn) read() {
 	defer func() {
+		kc.wg.Done()
 		kc.Close(true)
 	}()
 
@@ -109,7 +121,11 @@ func (kc *KCPConn) Read() {
 
 }
 
-func (kc *KCPConn) Write() {
+func (kc *KCPConn) write() {
+	defer func() {
+		kc.wg.Done()
+		kc.Close(true)
+	}()
 
 	defer PanicHandler()
 
@@ -137,7 +153,7 @@ func (kc *KCPConn) Write() {
 }
 
 func (kc *KCPConn) Send(pkt []byte) {
-	if kc.closed == true {
+	if kc.closed {
 		return
 	}
 	if kc.wch != nil {

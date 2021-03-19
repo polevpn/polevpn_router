@@ -60,6 +60,5 @@ func (ks *KCPServer) handleConn(conn *kcp.UDPSession) {
 	if ks.requestHandler != nil {
 		ks.requestHandler.OnConnection(kcpconn)
 	}
-	go kcpconn.Read()
-	go kcpconn.Write()
+	kcpconn.StartProcess()
 }

@@ -88,8 +88,7 @@ func (hs *HttpServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	if hs.requestHandler != nil {
 		wsconn := NewWebSocketConn(conn, hs.requestHandler)
 		hs.requestHandler.OnConnection(wsconn)
-		go wsconn.Read()
-		go wsconn.Write()
+		wsconn.StartProcess()
 	} else {
 		elog.Error("ws conn handler haven't set")
 		conn.Close()
