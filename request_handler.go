@@ -23,8 +23,8 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 
 	ppkt := PolePacket(pkt)
 	switch ppkt.Cmd() {
-	case CMD_ROUTER_REGISTER:
-		r.handleRouterRegister(ppkt, conn)
+	case CMD_ROUTE_REGISTER:
+		r.handleRouteRegister(ppkt, conn)
 	case CMD_C2S_IPDATA:
 		r.handleC2SIPData(ppkt, conn)
 	case CMD_HEART_BEAT:
@@ -37,13 +37,13 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 }
 
 func (r *RequestHandler) OnConnection(conn Conn) {
-	elog.Info("accpet new kcp conn", conn.String())
+	elog.Info("accpet new conn", conn.String())
 	r.connmgr.SetConnById(conn.String(), conn)
 }
 
-func (r *RequestHandler) handleRouterRegister(pkt PolePacket, conn Conn) {
+func (r *RequestHandler) handleRouteRegister(pkt PolePacket, conn Conn) {
 
-	elog.Info("received router register request from", conn.String())
+	elog.Info("received route register request from", conn.String())
 
 	req, err := anyvalue.NewFromJson(pkt.Payload())
 
