@@ -176,6 +176,7 @@ func (cm *ConnMgr) FindRoute(ip net.IP) Conn {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 
+	var defaultRouteConn Conn
 	for route, conn := range cm.route2conns {
 
 		_, subnet, err := net.ParseCIDR(route)
@@ -183,10 +184,12 @@ func (cm *ConnMgr) FindRoute(ip net.IP) Conn {
 		if err != nil {
 			continue
 		}
-
-		if subnet.Contains(ip) {
+		find := subnet.Contains(ip)
+		if route == "0.0.0.0/0" {
+			defaultRouteConn = conn
+		} else if find && (route != "0.0.0.0/0") {
 			return conn
 		}
 	}
-	return nil
+	return defaultRouteConn
 }
