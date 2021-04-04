@@ -1,14 +1,6 @@
-# PoleVPN Router
-
-## PoleVPN Router 介绍
-* polevpn router 是一种SD-WAN 技术，用来打通，加速企业不同办公区域，IDC，云服务 网络的一种网络技术，它工作在internet 协议之上
-* 全程加密通信安全可靠
-* 对业务应用透明，无感知，基于网络ip 协议层数据转发
-* 安装容易，简单，golang 编写，没有依赖，高性能
-* 即可打通加速企业网络，也可作为VPN SERVER 使用
-* 低成本SD-WAN 技术，同时拥有专线的低延时
-* 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
-* 不需要安装特定的SD-WAN 硬件设备
+# PoleVPN SD-WAN 虚拟路由系统
+* 用来打通，加速企业不同办公区域，IDC，云服务 网络的一种网络技术，它工作在internet 协议之上
+* 系统分为polevpn router 跟polevpn gateway
 
 ## 系统架构图
 
@@ -16,9 +8,20 @@
 
 ## 系统架构说明
 * polevpn router 跟 polevpn gateway 配合使用
-* polevpn router 作为整个虚拟路由系统的服务端用来转发polevpn gateway 传过来的ip层数据包
-* polevpn gateway 是本地网络虚拟网关,通过创建虚拟网卡从本机网络协议栈获取IP数据包发给polevpn router,以及把从polevpn router 接收到的ip 数据包写入到本机的网络协议栈，其他机器或者本地路由器可以配置路由到这台机器
+* polevpn router 作为整个SD-WAN虚拟路由系统的服务端,用来转发polevpn gateway 传过来的ip层数据包
+* polevpn gateway 是本地网络虚拟网关,通过创建虚拟网卡从本机网络协议栈获取IP数据包发给polevpn router,以及把从polevpn router 接收到的ip 数据包写入到本机的网络协议栈.
+* 其他机器或者本地路由器可以配置路由到polevpn gateway 所在的机器
 * polevpn router跟polevpn gateway 之间采用 kcp，websocket 通信协议 来传输ip 数据报文
+
+## PoleVPN Router 介绍
+* polevpn router 是一种polevpn SD-WAN 虚拟路由系统服务端，
+* 全程加密通信安全可靠
+* 对业务应用透明，无感知，基于网络ip 协议层数据转发
+* 安装容易，简单，golang 编写，没有依赖，高性能
+* 即可打通加速企业网络，也可作为VPN SERVER 使用
+* 低成本SD-WAN 技术，同时拥有专线的低延时
+* 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
+* 不需要安装特定的SD-WAN 硬件设备
 
 ## polevpn router 安装使用
 * 克隆项目git clone https://github.com/polevpn/polevpn_router.git
