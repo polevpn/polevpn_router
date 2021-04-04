@@ -13,9 +13,9 @@
 
 ## 系统架构说明
 * polevpn router 跟 polevpn gateway 配合使用
-* polevpn router 路由服务端用来转发gateway 传过来的ip层数据包
-* polevpn gateway 是本地网络虚拟网关，其他机器或者网关可以配置路由到这台机器
-* polevpn router 是采用 kcp，websocket 通信协议 来传输ip 数据报文
+* polevpn router 作为整个虚拟路由系统的服务端用来转发polevpn gateway 传过来的ip层数据包
+* polevpn gateway 是本地网络虚拟网关,通过创建虚拟网卡从本机网络协议栈获取IP数据包,以及把从polevpn router 接收到的ip 数据包写入到本机的网络协议栈，其他机器或者本地路由器网关可以配置路由到这台机器
+* polevpn router跟polevpn gateway 之间采用 kcp，websocket 通信协议 来传输ip 数据报文
 
 ## polevpn router 安装使用
 * 克隆项目git clone https://github.com/polevpn/polevpn_router.git
