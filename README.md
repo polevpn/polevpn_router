@@ -1,6 +1,13 @@
 # PoleVPN SD-WAN 虚拟路由系统
 * 用来打通，加速企业不同办公区域，IDC，云服务 网络的一种网络技术，它工作在internet 协议之上
 * 系统分为polevpn router 跟polevpn gateway
+* 全程加密通信安全可靠，基于kcp,wss 协议
+* 对业务应用透明，无感知，基于网络ip 协议层数据转发
+* 安装容易，简单，golang 编写，没有依赖，高性能
+* 即可打通加速企业网络，也可作为VPN SERVER 使用
+* 低成本SD-WAN 技术，同时拥有专线的低延时
+* 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
+* 不需要安装特定的SD-WAN 硬件设备
 
 ## 系统架构图
 
@@ -14,14 +21,11 @@
 * polevpn router跟polevpn gateway 之间采用 kcp，websocket 通信协议 来传输ip 数据报文
 
 ## PoleVPN Router 介绍
-* polevpn router 是一种polevpn SD-WAN 虚拟路由系统服务端，
-* 全程加密通信安全可靠
-* 对业务应用透明，无感知，基于网络ip 协议层数据转发
-* 安装容易，简单，golang 编写，没有依赖，高性能
-* 即可打通加速企业网络，也可作为VPN SERVER 使用
-* 低成本SD-WAN 技术，同时拥有专线的低延时
-* 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
-* 不需要安装特定的SD-WAN 硬件设备
+* polevpn router 作为polevpn SD-WAN 虚拟路由系统服务端，提供路由服务
+* 通信协议采用基于udp 的kcp 协议，kcp协议抗丢包，针对于延迟敏感的数据，有很大的作用
+* 同时支持wss 通信协议，结合bbr 拥塞算法，可以做到协议层面抗GFW 阻断，同时延迟低
+* wss 通信加密通过tls,kcp 通信加密通过AES
+
 
 ## polevpn router 安装使用
 * 克隆项目git clone https://github.com/polevpn/polevpn_router.git
