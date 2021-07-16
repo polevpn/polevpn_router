@@ -16,9 +16,7 @@ const (
 
 type ConnMgr struct {
 	route2conns   map[string]Conn
-	conn2routes   map[string]string
 	gateway2conns map[string]Conn
-	conn2gateways map[string]string
 	conns         map[string]Conn
 	connActives   map[string]time.Time
 	mutex         *sync.RWMutex
@@ -29,8 +27,6 @@ func NewConnMgr() *ConnMgr {
 		route2conns:   make(map[string]Conn),
 		gateway2conns: make(map[string]Conn),
 		mutex:         &sync.RWMutex{},
-		conn2routes:   make(map[string]string),
-		conn2gateways: make(map[string]string),
 		conns:         make(map[string]Conn),
 		connActives:   make(map[string]time.Time),
 	}
@@ -76,23 +72,13 @@ func (cm *ConnMgr) UpdateConnActiveTime(conn Conn) {
 func (cm *ConnMgr) AttachRouteToConn(route string, conn Conn) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-	sconn, ok := cm.route2conns[route]
-	if ok {
-		delete(cm.conn2routes, sconn.String())
-	}
 	cm.route2conns[route] = conn
-	cm.conn2routes[conn.String()] = route
 }
 
 func (cm *ConnMgr) AttachGatewayToConn(gateway string, conn Conn) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-	sconn, ok := cm.gateway2conns[gateway]
-	if ok {
-		delete(cm.conn2routes, sconn.String())
-	}
 	cm.gateway2conns[gateway] = conn
-	cm.conn2gateways[conn.String()] = gateway
 }
 
 func (cm *ConnMgr) IsDetached(route string) bool {
@@ -105,26 +91,32 @@ func (cm *ConnMgr) IsDetached(route string) bool {
 func (cm *ConnMgr) DetachRouteFromConn(conn Conn) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-	route, ok := cm.conn2routes[conn.String()]
-	if ok {
-		sconn, ok := cm.route2conns[route]
-		if ok && sconn.String() == conn.String() {
-			delete(cm.route2conns, route)
+
+	routeList := make([]string, 0)
+	for route, item := range cm.route2conns {
+		if item.String() == conn.String() {
+			routeList = append(routeList, route)
 		}
-		delete(cm.conn2routes, conn.String())
+	}
+
+	for _, route := range routeList {
+		delete(cm.route2conns, route)
 	}
 }
 
 func (cm *ConnMgr) DetachGatewayFromConn(conn Conn) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-	gateway, ok := cm.conn2gateways[conn.String()]
-	if ok {
-		sconn, ok := cm.gateway2conns[gateway]
-		if ok && sconn.String() == conn.String() {
-			delete(cm.gateway2conns, gateway)
+
+	gatewayList := make([]string, 0)
+	for gateway, item := range cm.gateway2conns {
+		if item.String() == conn.String() {
+			gatewayList = append(gatewayList, gateway)
 		}
-		delete(cm.conn2gateways, conn.String())
+	}
+
+	for _, gateway := range gatewayList {
+		delete(cm.gateway2conns, gateway)
 	}
 }
 
@@ -158,18 +150,6 @@ func (cm *ConnMgr) GetConnByGateway(gateway string) Conn {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 	return cm.gateway2conns[gateway]
-}
-
-func (cm *ConnMgr) GeRouteByConn(conn Conn) string {
-	cm.mutex.RLock()
-	defer cm.mutex.RUnlock()
-	return cm.conn2routes[conn.String()]
-}
-
-func (cm *ConnMgr) GetGetwayByConn(conn Conn) string {
-	cm.mutex.RLock()
-	defer cm.mutex.RUnlock()
-	return cm.conn2gateways[conn.String()]
 }
 
 func (cm *ConnMgr) FindRoute(ip net.IP) Conn {

@@ -37,7 +37,7 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 }
 
 func (r *RequestHandler) OnConnection(conn Conn) {
-	elog.Info("accpet new conn", conn.String())
+	elog.Info("accpet new conn ", conn.String())
 	r.connmgr.SetConnById(conn.String(), conn)
 }
 
@@ -58,9 +58,16 @@ func (r *RequestHandler) handleRouteRegister(pkt PolePacket, conn Conn) {
 			oldConn.Close(true)
 		}
 
-		elog.Info("register route ", req.Get("network").AsStr())
-		r.connmgr.AttachRouteToConn(req.Get("network").AsStr(), conn)
-
+		if req.Get("network").IsStr() {
+			elog.Info("register route ", req.Get("network").AsStr())
+			r.connmgr.AttachRouteToConn(req.Get("network").AsStr(), conn)
+		} else if req.Get("network").IsArray() {
+			networks := req.Get("network").AsStrArr()
+			elog.Info("register route ", networks)
+			for _, network := range networks {
+				r.connmgr.AttachRouteToConn(network, conn)
+			}
+		}
 		elog.Info("register gateway ", req.Get("gateway").AsStr())
 		r.connmgr.AttachGatewayToConn(req.Get("gateway").AsStr(), conn)
 
