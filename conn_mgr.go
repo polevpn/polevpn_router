@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -19,6 +20,8 @@ type ConnMgr struct {
 	gateway2conns map[string]Conn
 	conns         map[string]Conn
 	connActives   map[string]time.Time
+	nettable      map[string]*net.IPNet
+	sortedtable   []string
 	mutex         *sync.RWMutex
 }
 
@@ -29,6 +32,8 @@ func NewConnMgr() *ConnMgr {
 		mutex:         &sync.RWMutex{},
 		conns:         make(map[string]Conn),
 		connActives:   make(map[string]time.Time),
+		sortedtable:   make([]string, 0),
+		nettable:      make(map[string]*net.IPNet),
 	}
 	go cm.CheckTimeout()
 	return cm
@@ -73,6 +78,19 @@ func (cm *ConnMgr) AttachRouteToConn(route string, conn Conn) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 	cm.route2conns[route] = conn
+
+	var sortedtable []string
+	for route := range cm.route2conns {
+		sortedtable = append(sortedtable, route)
+		_, subnet, err := net.ParseCIDR(route)
+		if err != nil {
+			continue
+		}
+		cm.nettable[route] = subnet
+	}
+
+	sort.Strings(sortedtable)
+	cm.sortedtable = sortedtable
 }
 
 func (cm *ConnMgr) AttachGatewayToConn(gateway string, conn Conn) {
@@ -102,6 +120,19 @@ func (cm *ConnMgr) DetachRouteFromConn(conn Conn) {
 	for _, route := range routeList {
 		delete(cm.route2conns, route)
 	}
+
+	var sortedtable []string
+	for route := range cm.route2conns {
+		sortedtable = append(sortedtable, route)
+		_, subnet, err := net.ParseCIDR(route)
+		if err != nil {
+			continue
+		}
+		cm.nettable[route] = subnet
+	}
+
+	sort.Strings(sortedtable)
+	cm.sortedtable = sortedtable
 }
 
 func (cm *ConnMgr) DetachGatewayFromConn(conn Conn) {
@@ -157,13 +188,18 @@ func (cm *ConnMgr) FindRoute(ip net.IP) Conn {
 	defer cm.mutex.RUnlock()
 
 	var defaultRouteConn Conn
-	for route, conn := range cm.route2conns {
 
-		_, subnet, err := net.ParseCIDR(route)
+	slen := len(cm.sortedtable)
 
-		if err != nil {
+	for i := slen - 1; i > -1; i-- {
+		route := cm.sortedtable[i]
+		subnet := cm.nettable[route]
+		conn := cm.route2conns[route]
+
+		if subnet == nil {
 			continue
 		}
+
 		find := subnet.Contains(ip)
 		if route == "0.0.0.0/0" {
 			defaultRouteConn = conn
