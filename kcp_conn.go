@@ -79,9 +79,9 @@ func (kc *KCPConn) read() {
 			n, err := kc.conn.Read(prefetch[preOffset:])
 			if err != nil {
 				if err == io.ErrUnexpectedEOF || err == io.EOF {
-					elog.Info(kc.String(), "conn closed")
+					elog.Info(kc.String(), ",conn closed")
 				} else {
-					elog.Error(kc.String(), "conn read exception:", err)
+					elog.Error(kc.String(), ",conn read exception:", err)
 				}
 				return
 			}
@@ -105,9 +105,9 @@ func (kc *KCPConn) read() {
 			n, err := kc.conn.Read(pkt[offset:])
 			if err != nil {
 				if err == io.ErrUnexpectedEOF || err == io.EOF {
-					elog.Info(kc.String(), "conn closed")
+					elog.Info(kc.String(), ",conn closed")
 				} else {
-					elog.Error(kc.String(), "conn read exception:", err)
+					elog.Error(kc.String(), ",conn read exception:", err)
 				}
 				return
 			}
@@ -133,19 +133,19 @@ func (kc *KCPConn) write() {
 
 		pkt, ok := <-kc.wch
 		if !ok {
-			elog.Error(kc.String(), "get pkt from write channel fail,maybe channel closed")
+			elog.Error(kc.String(), ",get pkt from write channel fail,maybe channel closed")
 			return
 		}
 		if pkt == nil {
-			elog.Info(kc.String(), "exit write process")
+			elog.Info(kc.String(), ",exit write process")
 			return
 		}
 		_, err := kc.conn.Write(pkt)
 		if err != nil {
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				elog.Info(kc.String(), "conn closed")
+				elog.Info(kc.String(), ",conn closed")
 			} else {
-				elog.Error(kc.String(), "conn write exception:", err)
+				elog.Error(kc.String(), ",conn write exception:", err)
 			}
 			return
 		}

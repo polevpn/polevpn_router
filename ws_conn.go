@@ -75,9 +75,9 @@ func (wsc *WebSocketConn) read() {
 		mtype, pkt, err := wsc.conn.ReadMessage()
 		if err != nil {
 			if err == io.ErrUnexpectedEOF || err == io.EOF {
-				elog.Info(wsc.String(), "conn closed")
+				elog.Info(wsc.String(), ",conn closed")
 			} else {
-				elog.Error(wsc.String(), "conn read exception:", err)
+				elog.Error(wsc.String(), ",conn read exception:", err)
 			}
 			return
 		}
@@ -101,20 +101,20 @@ func (wsc *WebSocketConn) write() {
 
 		pkt, ok := <-wsc.wch
 		if !ok {
-			elog.Error(wsc.String(), "get pkt from write channel fail,maybe channel closed")
+			elog.Error(wsc.String(), ",get pkt from write channel fail,maybe channel closed")
 			return
 		}
 		if pkt == nil {
-			elog.Info(wsc.String(), "exit write process")
+			elog.Info(wsc.String(), ",exit write process")
 			return
 		}
 
 		err := wsc.conn.WriteMessage(websocket.BinaryMessage, pkt)
 		if err != nil {
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				elog.Info(wsc.String(), "conn closed")
+				elog.Info(wsc.String(), ",conn closed")
 			} else {
-				elog.Error(wsc.String(), "conn write exception:", err)
+				elog.Error(wsc.String(), ",conn write exception:", err)
 			}
 			return
 		}

@@ -43,7 +43,7 @@ func (r *RequestHandler) OnConnection(conn Conn) {
 
 func (r *RequestHandler) handleRouteRegister(pkt PolePacket, conn Conn) {
 
-	elog.Info("received route register request from", conn.String())
+	elog.Info("received route register request from ", conn.String())
 
 	req, err := anyvalue.NewFromJson(pkt.Payload())
 
@@ -112,7 +112,7 @@ func (r *RequestHandler) handleC2SIPData(pkt PolePacket, conn Conn) {
 }
 
 func (r *RequestHandler) handleHeartBeat(pkt PolePacket, conn Conn) {
-	elog.Debug("received heartbeat request", conn.String())
+	elog.Debug("received heartbeat request,", conn.String())
 	buf := make([]byte, POLE_PACKET_HEADER_LEN)
 	resppkt := PolePacket(buf)
 	resppkt.SetLen(POLE_PACKET_HEADER_LEN)
@@ -123,7 +123,7 @@ func (r *RequestHandler) handleHeartBeat(pkt PolePacket, conn Conn) {
 }
 
 func (r *RequestHandler) handleClientClose(pkt PolePacket, conn Conn) {
-	elog.Info(conn.String(), "close")
+	elog.Info(conn.String(), ",closed")
 }
 
 func (r *RequestHandler) OnClosed(conn Conn, proactive bool) {
@@ -134,7 +134,7 @@ func (r *RequestHandler) OnClosed(conn Conn, proactive bool) {
 	r.connmgr.DetachGatewayFromConn(conn)
 	//just process proactive close event
 	if proactive {
-		elog.Info(conn.String(), "proactive close")
+		elog.Info(conn.String(), ",proactive close")
 	}
 
 }
