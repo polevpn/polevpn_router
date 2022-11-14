@@ -48,7 +48,7 @@
         "cert_file":"./keys/server.crt", // tls 通信证书
         "key_file":"./keys/server.key" // tls 通信key
     },
-    "key":"123456" //通信用的共享密钥
+    "key":"123456" //建立连接用的密钥
 }
 ```
 ## 常见应用案例
