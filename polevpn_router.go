@@ -23,20 +23,23 @@ func (ps *PoleVPNRouter) Start(config *anyvalue.AnyValue) {
 	if config.Get("kcp.enable").AsBool() {
 		kcpServer := NewKCPServer(requestHandler)
 		wg.Add(1)
-		go kcpServer.Listen(wg, config.Get("kcp.listen").AsStr(), config.Get("shared_key").AsStr())
+		go kcpServer.ListenTLS(wg,
+			config.Get("kcp.listen").AsStr(),
+			config.Get("kcp.cert_file").AsStr(),
+			config.Get("kcp.key_file").AsStr(),
+		)
 		elog.Infof("listen kcp %v", config.Get("kcp.listen").AsStr())
 	}
 
-	if config.Get("wss.enable").AsBool() {
-		httpServer := NewHttpServer(requestHandler)
+	if config.Get("tls.enable").AsBool() {
+		httpServer := NewTLSServer(requestHandler)
 		wg.Add(1)
 		go httpServer.ListenTLS(wg,
-			config.Get("wss.listen").AsStr(),
-			config.Get("shared_key").AsStr(),
-			config.Get("wss.cert_file").AsStr(),
-			config.Get("wss.key_file").AsStr(),
+			config.Get("tls.listen").AsStr(),
+			config.Get("tls.cert_file").AsStr(),
+			config.Get("tls.key_file").AsStr(),
 		)
-		elog.Infof("listen wss %v", config.Get("wss.listen").AsStr())
+		elog.Infof("listen tls %v", config.Get("tls.listen").AsStr())
 	}
 
 	wg.Wait()

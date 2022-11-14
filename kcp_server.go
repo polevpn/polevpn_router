@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/tls"
+	"net"
 	"sync"
 
+	"github.com/pion/dtls/v2"
 	"github.com/polevpn/elog"
-	"github.com/polevpn/kcp-go/v5"
+	"github.com/polevpn/kcp"
 )
 
 const (
@@ -26,30 +29,52 @@ func NewKCPServer(requestHandler *RequestHandler) *KCPServer {
 	}
 }
 
-func (ks *KCPServer) Listen(wg *sync.WaitGroup, addr string, sharedKey string) {
+func (ks *KCPServer) ListenTLS(wg *sync.WaitGroup, addr string, certFile string, keyFile string) {
 	defer wg.Done()
-	if len(sharedKey) != KCP_SHARED_KEY_LEN {
-		elog.Error("share key must be 16")
+
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
+
+	if err != nil {
+		elog.Error("resolve address fail,", err)
 		return
 	}
-	block, _ := kcp.NewAESBlockCrypt([]byte(sharedKey))
-	if listener, err := kcp.ListenWithOptions(addr, block, 10, 3); err == nil {
-		for {
-			conn, err := listener.AcceptKCP()
-			if err != nil {
-				elog.Error(err)
-			}
-			conn.SetMtu(KCP_MTU)
-			conn.SetACKNoDelay(true)
-			conn.SetStreamMode(true)
-			conn.SetNoDelay(1, 10, 2, 1)
-			conn.SetWindowSize(KCP_SEND_WINDOW, KCP_RECV_WINDOW)
-			conn.SetReadBuffer(KCP_READ_BUFFER)
-			conn.SetReadBuffer(KCP_WRITE_BUFFER)
-			go ks.handleConn(conn)
+
+	certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
+
+	if err != nil {
+		elog.Error("load cert fail,", err)
+		return
+	}
+
+	// Prepare the configuration of the DTLS connection
+	config := &dtls.Config{
+		Certificates: []tls.Certificate{certificate},
+		MTU:          1400,
+	}
+
+	listener, err := kcp.Listen(udpAddr, config)
+
+	if err != nil {
+		elog.Error("kcp listen fail,", err)
+		return
+	}
+
+	defer listener.Close()
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			elog.Error("accept kcp conn fail,", err)
+			continue
 		}
-	} else {
-		elog.Error(err)
+		conn.SetMtu(KCP_MTU)
+		conn.SetACKNoDelay(true)
+		conn.SetStreamMode(true)
+		conn.SetNoDelay(1, 10, 2, 1)
+		conn.SetWindowSize(KCP_SEND_WINDOW, KCP_RECV_WINDOW)
+		conn.SetReadBuffer(KCP_READ_BUFFER)
+		conn.SetReadBuffer(KCP_WRITE_BUFFER)
+		go ks.handleConn(conn)
 	}
 
 }

@@ -1,13 +1,15 @@
 {
     "kcp":{
         "listen":"0.0.0.0:443",
-        "enable":true
+        "enable":true,
+        "cert_file":"./keys/server.crt",
+        "key_file":"./keys/server.key"
     },
-    "wss":{
+    "tls":{
         "listen":"0.0.0.0:443",
         "enable":true,
         "cert_file":"./keys/server.crt",
         "key_file":"./keys/server.key"
     },
-    "shared_key":"!@#dFXemc$%*%^0K"
+    "key":"123456"
 }

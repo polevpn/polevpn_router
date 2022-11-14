@@ -3,12 +3,10 @@ package main
 import "encoding/binary"
 
 const (
-	CMD_ROUTE_REGISTER = 0x1
-	CMD_S2C_IPDATA     = 0x2
-	CMD_C2S_IPDATA     = 0x3
-	CMD_HEART_BEAT     = 0x4
-	CMD_CLIENT_CLOSED  = 0x5
-	CMD_KICK_OUT       = 0x6
+	CMD_AUTH_REGISTER = 0x1
+	CMD_S2C_IPDATA    = 0x2
+	CMD_C2S_IPDATA    = 0x3
+	CMD_HEART_BEAT    = 0x4
 )
 
 const (

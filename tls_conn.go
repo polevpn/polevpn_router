@@ -3,35 +3,35 @@ package main
 import (
 	"encoding/binary"
 	"io"
+	"net"
 	"sync"
 
 	"github.com/polevpn/elog"
-	"github.com/polevpn/kcp"
 )
 
 const (
-	CH_KCP_WRITE_SIZE = 2000
+	CH_TCP_WRITE_SIZE = 2000
 )
 
-type KCPConn struct {
-	conn    *kcp.UDPSession
+type TLSConn struct {
+	conn    net.Conn
 	wch     chan []byte
 	closed  bool
 	handler *RequestHandler
 	wg      *sync.WaitGroup
 }
 
-func NewKCPConn(conn *kcp.UDPSession, handler *RequestHandler) *KCPConn {
-	return &KCPConn{
+func NewTLSConn(conn net.Conn, handler *RequestHandler) *TLSConn {
+	return &TLSConn{
 		conn:    conn,
 		closed:  false,
-		wch:     make(chan []byte, CH_KCP_WRITE_SIZE),
+		wch:     make(chan []byte, CH_TCP_WRITE_SIZE),
 		handler: handler,
 		wg:      &sync.WaitGroup{},
 	}
 }
 
-func (kc *KCPConn) Close(flag bool) error {
+func (kc *TLSConn) Close(flag bool) error {
 	if !kc.closed {
 		kc.closed = true
 		if kc.wch != nil {
@@ -48,22 +48,22 @@ func (kc *KCPConn) Close(flag bool) error {
 	return nil
 }
 
-func (kc *KCPConn) String() string {
+func (kc *TLSConn) String() string {
 	return kc.conn.RemoteAddr().String() + "->" + kc.conn.LocalAddr().String()
 }
 
-func (kc *KCPConn) IsClosed() bool {
+func (kc *TLSConn) IsClosed() bool {
 	return kc.closed
 }
 
-func (kc *KCPConn) StartProcess() {
+func (kc *TLSConn) StartProcess() {
 	kc.wg.Add(2)
 	go kc.read()
 	go kc.write()
 
 }
 
-func (kc *KCPConn) read() {
+func (kc *TLSConn) read() {
 	defer func() {
 		kc.wg.Done()
 		kc.Close(true)
@@ -111,7 +111,7 @@ func (kc *KCPConn) read() {
 
 }
 
-func (kc *KCPConn) write() {
+func (kc *TLSConn) write() {
 	defer func() {
 		kc.wg.Done()
 		kc.Close(true)
@@ -142,7 +142,7 @@ func (kc *KCPConn) write() {
 	}
 }
 
-func (kc *KCPConn) Send(pkt []byte) {
+func (kc *TLSConn) Send(pkt []byte) {
 	if kc.closed {
 		return
 	}

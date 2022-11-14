@@ -23,14 +23,12 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 
 	ppkt := PolePacket(pkt)
 	switch ppkt.Cmd() {
-	case CMD_ROUTE_REGISTER:
+	case CMD_AUTH_REGISTER:
 		r.handleRouteRegister(ppkt, conn)
 	case CMD_C2S_IPDATA:
 		r.handleC2SIPData(ppkt, conn)
 	case CMD_HEART_BEAT:
 		r.handleHeartBeat(ppkt, conn)
-	case CMD_CLIENT_CLOSED:
-		r.handleClientClose(ppkt, conn)
 	default:
 		elog.Error("invalid pkt cmd=", ppkt.Cmd())
 	}
@@ -44,44 +42,53 @@ func (r *RequestHandler) OnConnection(conn Conn) {
 func (r *RequestHandler) handleRouteRegister(pkt PolePacket, conn Conn) {
 
 	elog.Info("received route register request from ", conn.String())
-
-	req, err := anyvalue.NewFromJson(pkt.Payload())
-
 	resp := anyvalue.New()
+	req, err := anyvalue.NewFromJson(pkt.Payload())
 
 	if err != nil {
 		resp.Set("error", err.Error())
-	} else {
-
-		oldConn := r.connmgr.GetConnByGateway(req.Get("gateway").AsStr())
-		if oldConn != nil {
-			oldConn.Close(true)
-		}
-
-		if req.Get("network").IsStr() {
-			elog.Info("register route ", req.Get("network").AsStr())
-			r.connmgr.AttachRouteToConn(req.Get("network").AsStr(), conn)
-		} else if req.Get("network").IsArray() {
-			networks := req.Get("network").AsStrArr()
-			elog.Info("register route ", networks)
-			for _, network := range networks {
-				r.connmgr.AttachRouteToConn(network, conn)
-			}
-		}
-		elog.Info("register gateway ", req.Get("gateway").AsStr())
-		r.connmgr.AttachGatewayToConn(req.Get("gateway").AsStr(), conn)
-
-		r.connmgr.UpdateConnActiveTime(conn)
-
+		r.respPkg(conn, resp, pkt.Cmd(), pkt.Seq())
+		return
 	}
 
+	if req.Get("key").AsStr() != Config.Get("key").AsStr() {
+		resp.Set("error", "key invalid")
+		elog.Error("invalid key,", req.Get("key").AsStr())
+		r.respPkg(conn, resp, pkt.Cmd(), pkt.Seq())
+		return
+	}
+
+	oldConn := r.connmgr.GetConnByGateway(req.Get("gateway").AsStr())
+	if oldConn != nil {
+		oldConn.Close(true)
+	}
+
+	if req.Get("network").IsStr() {
+		elog.Info("register route ", req.Get("network").AsStr())
+		r.connmgr.AttachRouteToConn(req.Get("network").AsStr(), conn)
+	} else if req.Get("network").IsArray() {
+		networks := req.Get("network").AsStrArr()
+		elog.Info("register route ", networks)
+		for _, network := range networks {
+			r.connmgr.AttachRouteToConn(network, conn)
+		}
+	}
+	elog.Info("register gateway ", req.Get("gateway").AsStr())
+	r.connmgr.AttachGatewayToConn(req.Get("gateway").AsStr(), conn)
+
+	r.connmgr.UpdateConnActiveTime(conn)
+
+	r.respPkg(conn, resp, pkt.Cmd(), pkt.Seq())
+}
+
+func (r *RequestHandler) respPkg(conn Conn, resp *anyvalue.AnyValue, cmd uint16, seq uint32) {
 	body, _ := resp.MarshalJSON()
 	buf := make([]byte, POLE_PACKET_HEADER_LEN+len(body))
 	copy(buf[POLE_PACKET_HEADER_LEN:], body)
 	resppkt := PolePacket(buf)
 	resppkt.SetLen(uint16(len(buf)))
-	resppkt.SetCmd(pkt.Cmd())
-	resppkt.SetSeq(pkt.Seq())
+	resppkt.SetCmd(cmd)
+	resppkt.SetSeq(seq)
 	conn.Send(resppkt)
 }
 
@@ -120,10 +127,6 @@ func (r *RequestHandler) handleHeartBeat(pkt PolePacket, conn Conn) {
 	resppkt.SetSeq(pkt.Seq())
 	conn.Send(resppkt)
 	r.connmgr.UpdateConnActiveTime(conn)
-}
-
-func (r *RequestHandler) handleClientClose(pkt PolePacket, conn Conn) {
-	elog.Info(conn.String(), ",closed")
 }
 
 func (r *RequestHandler) OnClosed(conn Conn, proactive bool) {
