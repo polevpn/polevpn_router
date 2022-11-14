@@ -38,15 +38,17 @@
 {
     "kcp":{
         "listen":"0.0.0.0:443", //kcp 监听ip:port
-        "enable":true //是否启用kcp 
+        "enable":true, //是否启用kcp 
+        "cert_file":"./keys/server.crt", // dtls 通信证书
+        "key_file":"./keys/server.key" //dtls 通信key
     },
-    "wss":{
-        "listen":"0.0.0.0:443", //websocket 监听ip:port
-        "enable":true, //是否启用websocket
-        "cert_file":"./keys/server.crt", //websocket tls 通信证书
-        "key_file":"./keys/server.key" //websocket tls 通信key
+    "tls":{
+        "listen":"0.0.0.0:443", //tls 监听ip:port
+        "enable":true, //是否启用tls
+        "cert_file":"./keys/server.crt", // tls 通信证书
+        "key_file":"./keys/server.key" // tls 通信key
     },
-    "shared_key":"!@#dFXemc$%*%^0K" //通信用的共享密钥
+    "key":"123456" //通信用的共享密钥
 }
 ```
 ## 常见应用案例
