@@ -23,8 +23,8 @@
 ## PoleVPN Router 介绍
 * polevpn router 作为polevpn SD-WAN 虚拟路由系统服务端，提供路由服务
 * 通信协议采用基于udp 的kcp 协议，kcp协议抗丢包，针对于延迟敏感的数据，有很大的作用
-* 同时支持wss 通信协议，结合bbr 拥塞算法，可以做到协议层面抗GFW 阻断，同时延迟低
-* wss 通信加密通过tls,kcp 通信加密通过AES
+* 同时支持tcp tls 通信协议，结合bbr 拥塞算法，可以做到协议层面抗GFW 阻断，同时延迟低
+* tcp 通信加密通过tls,kcp 通信加密通过dtls
 
 
 ## polevpn router 安装使用
