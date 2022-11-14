@@ -1,7 +1,7 @@
 # PoleVPN SD-WAN 虚拟路由系统
 * 用来打通，加速企业不同办公区域，IDC，云服务 网络的一种网络技术，它工作在internet 协议之上
 * 系统分为polevpn router 跟polevpn gateway
-* 全程加密通信安全可靠，基于kcp,wss 协议
+* 全程加密通信安全可靠，基于kcp dtls,tcp tls 协议
 * 对业务应用透明，无感知，基于网络ip 协议层数据转发
 * 安装容易，简单，golang 编写，没有依赖，高性能
 * 即可打通加速企业网络，也可作为VPN SERVER 使用
