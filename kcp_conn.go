@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
-	"io"
 	"sync"
 
 	"github.com/polevpn/elog"
@@ -72,37 +70,11 @@ func (kc *KCPConn) read() {
 	defer PanicHandler()
 
 	for {
-		prefetch := make([]byte, 2)
 
-		_, err := io.ReadFull(kc.conn, prefetch)
-
-		if err != nil {
-			if err == io.ErrUnexpectedEOF || err == io.EOF {
-				elog.Info(kc.String(), ",conn closed")
-			} else {
-				elog.Error(kc.String(), ",conn read exception:", err)
-			}
-			return
-		}
-
-		len := binary.BigEndian.Uint16(prefetch)
-
-		if len < POLE_PACKET_HEADER_LEN {
-			elog.Error("invalid pkt len=", len)
-			continue
-		}
-
-		pkt := make([]byte, len)
-		copy(pkt, prefetch)
-
-		_, err = io.ReadFull(kc.conn, pkt[2:])
+		pkt, err := ReadPacket(kc.conn)
 
 		if err != nil {
-			if err == io.ErrUnexpectedEOF || err == io.EOF {
-				elog.Info(kc.String(), ",conn closed")
-			} else {
-				elog.Error(kc.String(), ",conn read exception:", err)
-			}
+			elog.Error(kc.String(), " read packet end status=", err)
 			return
 		}
 
@@ -123,7 +95,7 @@ func (kc *KCPConn) write() {
 
 		pkt, ok := <-kc.wch
 		if !ok {
-			elog.Error(kc.String(), ",get pkt from write channel fail,maybe channel closed")
+			elog.Error(kc.String(), ",channel closed")
 			return
 		}
 		if pkt == nil {
@@ -132,11 +104,7 @@ func (kc *KCPConn) write() {
 		}
 		_, err := kc.conn.Write(pkt)
 		if err != nil {
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				elog.Info(kc.String(), ",conn closed")
-			} else {
-				elog.Error(kc.String(), ",conn write exception:", err)
-			}
+			elog.Error(kc.String(), ",conn write packet end status=", err)
 			return
 		}
 	}
