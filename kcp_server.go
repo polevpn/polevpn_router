@@ -2,10 +2,12 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
 	"net"
 	"sync"
 
 	"github.com/pion/dtls/v2"
+	"github.com/polevpn/anyvalue"
 	"github.com/polevpn/elog"
 	"github.com/polevpn/kcp"
 )
@@ -74,9 +76,64 @@ func (ks *KCPServer) ListenTLS(wg *sync.WaitGroup, addr string, certFile string,
 		conn.SetWindowSize(KCP_SEND_WINDOW, KCP_RECV_WINDOW)
 		conn.SetReadBuffer(KCP_READ_BUFFER)
 		conn.SetReadBuffer(KCP_WRITE_BUFFER)
+
+		err = ks.auth(conn)
+
+		if err != nil {
+			elog.Error("auth fail,", err)
+			conn.Close()
+			continue
+		}
+
 		go ks.handleConn(conn)
 	}
 
+}
+
+func (ks *KCPServer) auth(conn *kcp.UDPSession) error {
+
+	pkt, err := ReadPacket(conn)
+
+	if err != nil {
+		return err
+	}
+
+	ppkt := PolePacket(pkt)
+
+	if ppkt.Cmd() != CMD_AUTH {
+		return errors.New("invalid cmd")
+	}
+
+	av, err := anyvalue.NewFromJson(ppkt.Payload())
+
+	if err != nil {
+		return err
+	}
+
+	resp := anyvalue.New()
+
+	if av.Get("key").AsStr() != Config.Get("key").AsStr() {
+		resp.Set("error", "invalid key")
+	}
+
+	body, _ := resp.EncodeJson()
+
+	buf := make([]byte, POLE_PACKET_HEADER_LEN+len(body))
+	copy(buf[POLE_PACKET_HEADER_LEN:], body)
+	resppkt := PolePacket(buf)
+	resppkt.SetLen(uint16(len(buf)))
+	resppkt.SetCmd(CMD_AUTH)
+	resppkt.SetSeq(ppkt.Seq())
+	_, err = conn.Write(resppkt)
+	if err != nil {
+		elog.Error("write error", err)
+	}
+
+	if resp.Get("error").AsStr() != "" {
+		return errors.New(resp.Get("error").AsStr())
+	}
+
+	return nil
 }
 
 func (ks *KCPServer) handleConn(conn *kcp.UDPSession) {

@@ -113,7 +113,13 @@ func (kc *TLSConn) Send(pkt []byte) {
 	if kc.closed {
 		return
 	}
+
 	if kc.wch != nil {
-		kc.wch <- pkt
+
+		select {
+		case kc.wch <- pkt:
+		default:
+			elog.Error(kc.String(), " wch is full")
+		}
 	}
 }

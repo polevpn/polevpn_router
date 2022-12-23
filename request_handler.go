@@ -23,7 +23,7 @@ func (r *RequestHandler) OnRequest(pkt []byte, conn Conn) {
 
 	ppkt := PolePacket(pkt)
 	switch ppkt.Cmd() {
-	case CMD_AUTH_REGISTER:
+	case CMD_REGISTER:
 		r.handleRouteRegister(ppkt, conn)
 	case CMD_C2S_IPDATA:
 		r.handleC2SIPData(ppkt, conn)
@@ -47,13 +47,6 @@ func (r *RequestHandler) handleRouteRegister(pkt PolePacket, conn Conn) {
 
 	if err != nil {
 		resp.Set("error", err.Error())
-		r.respPkg(conn, resp, pkt.Cmd(), pkt.Seq())
-		return
-	}
-
-	if req.Get("key").AsStr() != Config.Get("key").AsStr() {
-		resp.Set("error", "key invalid")
-		elog.Error("invalid key,", req.Get("key").AsStr())
 		r.respPkg(conn, resp, pkt.Cmd(), pkt.Seq())
 		return
 	}

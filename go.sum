@@ -139,6 +139,8 @@ github.com/polevpn/netstack v1.10.1 h1:zKRQgbzpt8i+jo5IuzvmUMjXUL7Gww+V6htv9G5WE
 github.com/polevpn/netstack v1.10.1/go.mod h1:bIZcO16BHlmfG7t56hqoXiodF2T3C+e+eUrdHypxrbc=
 github.com/polevpn/netstack v1.10.2 h1:/Vlx/WegKc3Af7TjTRF7Hpi8v8rEJMg+SNleXJ9IzJw=
 github.com/polevpn/netstack v1.10.2/go.mod h1:bIZcO16BHlmfG7t56hqoXiodF2T3C+e+eUrdHypxrbc=
+github.com/polevpn/netstack v1.10.9 h1:0k5TFeQ5OKU6h2HgwqhMjLnxuwaBwCF8k/ZI8vkid3I=
+github.com/polevpn/netstack v1.10.9/go.mod h1:2C2dP1yP9Jyu2XqHhPV0AxA9F1IbdZI1QpX8wdXAMGU=
 github.com/polevpn/water v1.0.1 h1:Qy9EauklrHwkUxL9Wy+lmjVH1l/x8VW7wLn0IW9DipY=
 github.com/polevpn/water v1.0.1/go.mod h1:L41gnrOhprREWmwx5yONXP3ABrQ8CJqXvgvD+6B1DsE=
 github.com/polevpn/xnet v1.0.0 h1:QuCvRnaL3ZfuJerCScjQ9MUFCInOAK6i+ZcD0b7zz0I=
