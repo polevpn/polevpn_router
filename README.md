@@ -11,8 +11,6 @@
 * 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
 * 不需要安装特定的SD-WAN 硬件设备
 
-## 更多功能
-PoleVPNServer 包含了PoleVPNRouter 所有功能外，同时具备完善的企业级VPN功能 [点击这里](https://polevpn.com/docs)
 
 ## 系统架构图
 
@@ -67,4 +65,7 @@ PoleVPNServer 包含了PoleVPNRouter 所有功能外，同时具备完善的企�
     - 可以在云端任意一台机器安装polevpn router 跟polevpn gateway 
     - 公司自己机房任意一台机器安装polevpn gateway 
     - 然后配置好相应的路由，就可以打通公司机房网络跟云端网络，不需要使用复杂的专门的vpn 设备
+    
+## 更多功能
+PoleVPNServer 包含了PoleVPNRouter 所有功能外，同时具备完善的企业级VPN功能 [点击这里](https://polevpn.com/docs)
   
