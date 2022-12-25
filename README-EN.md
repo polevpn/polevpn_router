@@ -9,9 +9,6 @@
 * Efficient anti-packet loss technology, FEC technology, lower network delay and smoother
 * No need to install specific SD-WAN hardware devices
 
-## More features
-PoleVPNServer includes all the functions of PoleVPNRouter, and has complete enterprise-level VPN functions [Click here](https://polevpn.com/docs/en)
-
 ## System architecture diagram
 
 ![image](https://raw.githubusercontent.com/polevpn/polevpn_router/main/architecture.png)
@@ -65,3 +62,7 @@ PoleVPNServer includes all the functions of PoleVPNRouter, and has complete ente
      - You can install polevpn router and polevpn gateway on any machine in the cloud
      - Install polevpn gateway on any machine in the company's own computer room
      - Then configure the corresponding routing, you can get through the company's computer room network and cloud network, without using complicated special vpn equipment
+
+
+## More features
+PoleVPNServer includes all the functions of PoleVPNRouter, and has complete enterprise-level VPN functions [Click here](https://polevpn.com/docs/en)
