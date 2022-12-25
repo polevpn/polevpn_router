@@ -11,6 +11,9 @@
 * 高效的抗丢包技术，FEC 技术，网络延迟更低，更流畅
 * 不需要安装特定的SD-WAN 硬件设备
 
+## 更多功能
+PoleVPNServer 包含了PoleVPNRouter 所有功能外，同时具备完善的企业级VPN功能 [点击这里](https://polevpn.com/docs)
+
 ## 系统架构图
 
 ![image](https://raw.githubusercontent.com/polevpn/polevpn_router/main/architecture.png)
