@@ -9,6 +9,9 @@
 * Efficient anti-packet loss technology, FEC technology, lower network delay and smoother
 * No need to install specific SD-WAN hardware devices
 
+## More features
+PoleVPNServer includes all the functions of PoleVPNRouter, and has complete enterprise-level VPN functions [Click here](https://polevpn.com/docs/en)
+
 ## System architecture diagram
 
 ![image](https://raw.githubusercontent.com/polevpn/polevpn_router/main/architecture.png)
