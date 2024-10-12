@@ -31,8 +31,8 @@ github.com/polevpn/anyvalue v1.0.6 h1:IaAtj0ZkOfAqTd1K8rc5JvDt/qFsuivzrI4LXrYC4i
 github.com/polevpn/anyvalue v1.0.6/go.mod h1:SAmPKOT6BtaGar2NZc9u/TUZgDYBXO7lZZ9q1MU0LVk=
 github.com/polevpn/elog v1.1.1 h1:+Nnyaajv//fbmVextCGrcFfZXi+isprA1qQag2dcwhE=
 github.com/polevpn/elog v1.1.1/go.mod h1:u30sJGFE2hYV+KuEmE4Bw7Qh0J3eXS3AEXjyHtqPDjU=
-github.com/polevpn/kcp v1.0.2 h1:dx/3kKyVzICR6yWtnBuQRfle0kTi6l1gq3mtKpUQmkY=
-github.com/polevpn/kcp v1.0.2/go.mod h1:FFBEx8ImZsp+qgYP82KwNerNaAExC+30MlmQIXBDuws=
+github.com/polevpn/kcp v1.0.4 h1:5wOY1R0pYC+5K9Mp/Y2LJIXh41IzbRkm53JqaEUOaHI=
+github.com/polevpn/kcp v1.0.4/go.mod h1:FFBEx8ImZsp+qgYP82KwNerNaAExC+30MlmQIXBDuws=
 github.com/polevpn/netstack v1.10.9 h1:0k5TFeQ5OKU6h2HgwqhMjLnxuwaBwCF8k/ZI8vkid3I=
 github.com/polevpn/netstack v1.10.9/go.mod h1:2C2dP1yP9Jyu2XqHhPV0AxA9F1IbdZI1QpX8wdXAMGU=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

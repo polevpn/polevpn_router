@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/tls"
 	"errors"
 	"net"
 	"sync"
 
+	"github.com/pion/dtls/v3"
 	"github.com/polevpn/anyvalue"
 	"github.com/polevpn/elog"
 	"github.com/polevpn/kcp"
@@ -39,7 +41,20 @@ func (ks *KCPServer) ListenTLS(wg *sync.WaitGroup, addr string, certFile string,
 		return
 	}
 
-	listener, err := kcp.Listen(udpAddr, certFile, keyFile)
+	certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
+
+	if err != nil {
+		elog.Error("load cert fail,", err)
+		return
+	}
+
+	// Prepare the configuration of the DTLS connection
+	config := &dtls.Config{
+		Certificates: []tls.Certificate{certificate},
+		MTU:          1400,
+	}
+
+	listener, err := kcp.Listen(udpAddr, config)
 
 	if err != nil {
 		elog.Error("kcp listen fail,", err)
